@@ -59,20 +59,17 @@ const addFavoriteSong = async (req, res) => {
                 message: 'La canción no existe'
             });
         }
-        // Verificamos que el usuario no tiene ya la canción en favoritos
-        const user = await User.findById(req.user.id);
-        // 
 
-        if (user.favoriteSongs.some(song => song._id.toString() === songId.toString())) {
-            return res.status(400).json({
-                message: 'La canción ya está en favoritos'
-            });
-        }
-        // Añadimos la canción a favoritos
-        user.favoriteSongs.push(songId);
-        await user.save();
+        // Usamos $addToSet para evitar duplicados
+        const user = await User.findByIdAndUpdate(
+            req.user.id,
+            { $addToSet: { favoriteSongs: songId } },
+            { new: true }
+        );
+
         res.status(200).json({
             message: 'Canción añadida a favoritos correctamente',
+            favoriteSongs: user.favoriteSongs
         });
     } catch (error) {
         res.status(500).json(`Error al añadir la canción a favoritos: ${error}`);
@@ -83,17 +80,17 @@ const deleteFavoriteSong = async (req, res) => {
     try {
         const { songId } = req.params
         const user = await User.findById(req.user.id);
-        // Verificamos que la canción esté en favoritos
-        if (!user.favoriteSongs.includes(songId)) {
-            return res.status(400).json({
-                message: 'La canción no está en favoritos'
-            });
-        }
-        // Eliminamos la canción de favoritos
-        user.favoriteSongs = user.favoriteSongs.filter(_id => _id.toString() !== songId.toString()); // Creamos un nuevo array sin la canción a eliminar
-        await user.save();
+
+        // Usamos $pull para eliminar la canción de favoritos
+        const updatedUser = await User.findByIdAndUpdate(
+            req.user.id,
+            { $pull: { favoriteSongs: songId } },
+            { new: true }
+        );
+
         res.status(200).json({
             message: 'Canción eliminada de favoritos correctamente',
+            favoriteSongs: updatedUser.favoriteSongs
         });
     } catch (error) {
         res.status(500).json(`Error al eliminar la canción de favoritos: ${error}`);

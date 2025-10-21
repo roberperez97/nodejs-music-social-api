@@ -13,7 +13,7 @@ const getUsers = async (req, res, next) => {
 const promoteUser = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { role } = req.body;
+        const { role } = 'admin'; //Solo se permite cambiar a admin
         const updateFields = { role: role };
 
         const userUpdated = await User.findByIdAndUpdate(id, updateFields, { new: true })

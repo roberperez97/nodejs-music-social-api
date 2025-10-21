@@ -17,6 +17,7 @@ const register = async (req, res, next) => {
         const newUser = new User(req.body);
         if(req.file){
             newUser.image = req.file.path
+            newUser.role = 'user' // Ignorar el rol que venga en el body y que sea siempre 'user' al registrarse
         }
         const userSaved = await newUser.save();
         userSaved.password = '';
